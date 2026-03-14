@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Naked Festival — The Spirit of Suvarnaloka</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <header class="sidebar-header">
+      <h1 class="book-title" id="bookTitle">Stories</h1>
+      <p class="book-subtitle" id="bookSubtitle">Pick a story to read</p>
+    </header>
+    <p class="toc-section-title">Stories</p>
+    <nav class="story-list" id="storyList" aria-label="Stories"></nav>
+    <p class="toc-section-title">Chapters</p>
+    <nav class="toc" id="toc" aria-label="Chapters"></nav>
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+  <main class="reader" id="reader">
+    <article class="chapter" id="chapter">
+      <div class="chapter-placeholder" id="placeholder">
+        <p>Select a chapter from the menu.</p>
+      </div>
+      <div class="chapter-content hidden" id="content">
+        <h2 class="chapter-title" id="chapterTitle"></h2>
+        <div class="chapter-body" id="chapterBody"></div>
+      </div>
+    </article>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

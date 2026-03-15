@@ -18,6 +18,7 @@ const FOLDERS = [
   { id: 'the-only-one-who-remembers', dir: 'The Only One Who Remembers', title: 'The Only One Who Remembers', subtitle: '', chapterPrefix: 'onlyone' },
   { id: 'the-source-and-the-sapling', dir: 'The Source and the Sapling', title: 'The Source and the Sapling', subtitle: '', chapterPrefix: 'sapling' },
   { id: 'the-bare-surprise', dir: 'The Bare Surprise', title: 'The Bare Surprise', subtitle: '', chapterPrefix: 'bare' },
+  { id: 'the-second-skin', dir: 'The Second Skin', title: 'The Second Skin', subtitle: '', chapterPrefix: 'skin' },
   { id: 'untitled-folder', dir: 'untitled folder', title: 'Untitled', subtitle: '', chapterPrefix: 'untitled' }
 ];
 

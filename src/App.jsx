@@ -9,7 +9,7 @@ const RECENT_KEY = 'naked-stories-recent';
 const BOOKMARKS_KEY = 'naked-stories-bookmarks';
 const STATS_KEY = 'naked-stories-stats';
 const CHAPTER_PROGRESS_KEY = 'naked-stories-chapter-progress';
-const WORDS_PER_PAGE = 380;
+const WORDS_PER_PAGE = 180;
 const RECENT_MAX = 5;
 
 function flattenChapters(chapters) {
@@ -402,6 +402,7 @@ export default function App() {
           e.preventDefault();
         } else if (story && !bookOpen) {
           setBookOpen(true);
+          setFocusMode(true);
           e.preventDefault();
         } else if (nextChapter) {
           goTo(storyId, nextChapter.id, 0);
@@ -481,6 +482,7 @@ export default function App() {
     setChapterId(lastRead.chapterId);
     setPageIndex(lastRead.pageIndex ?? 0);
     setBookOpen(true);
+    setFocusMode(true);
     addToRecentlyOpened(lastRead.storyId);
   };
 
@@ -492,6 +494,7 @@ export default function App() {
       setChapterId(options.chapterId ?? s.chapters?.[0]?.id ?? null);
       setPageIndex(options.pageIndex ?? 0);
       setBookOpen(options.openDirect ?? false);
+      if (options.openDirect) setFocusMode(true);
       addToRecentlyOpened(sid);
     }
   };
@@ -713,7 +716,7 @@ export default function App() {
           {!story ? (
             <p className="chapter-placeholder">Select a story and chapter.</p>
           ) : !bookOpen ? (
-            <div className="book-cover" onClick={() => setBookOpen(true)} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && setBookOpen(true)}>
+            <div className="book-cover" onClick={() => { setBookOpen(true); setFocusMode(true); }} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') { setBookOpen(true); setFocusMode(true); } }}>
               <div className="book-cover-inner">
                 <h2 className="book-cover-title">{story.title}</h2>
                 {story.subtitle ? <p className="book-cover-subtitle">{story.subtitle}</p> : null}
@@ -759,7 +762,7 @@ export default function App() {
                 </div>
               )}
               {focusMode && (
-                <button type="button" className="focus-mode-exit" onClick={() => setFocusMode(false)} title="Exit focus (Esc)">⊙ Show toolbar</button>
+                <button type="button" className="focus-mode-exit" onClick={() => setFocusMode(false)} title="Menu (Esc)">← Menu</button>
               )}
               {isLastPageOfBook ? (
                 <div className="book-end-screen">

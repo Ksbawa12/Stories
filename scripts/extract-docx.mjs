@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import mammoth from 'mammoth';
+import { PDFParse } from 'pdf-parse';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
@@ -19,6 +20,8 @@ const FOLDERS = [
   { id: 'the-source-and-the-sapling', dir: 'The Source and the Sapling', title: 'The Source and the Sapling', subtitle: '', chapterPrefix: 'sapling' },
   { id: 'the-bare-surprise', dir: 'The Bare Surprise', title: 'The Bare Surprise', subtitle: '', chapterPrefix: 'bare' },
   { id: 'the-second-skin', dir: 'The Second Skin', title: 'The Second Skin', subtitle: '', chapterPrefix: 'skin' },
+  { id: 'family-kamasutra', dir: 'Family Kamasutra', title: 'Family Kamasutra', subtitle: '', chapterPrefix: 'kamasutra' },
+  { id: 'moms-help-with-erection', dir: 'Moms Help with Erection', title: 'Moms Help with Erection', subtitle: '', chapterPrefix: 'erection' },
   { id: 'untitled-folder', dir: 'untitled folder', title: 'Untitled', subtitle: '', chapterPrefix: 'untitled' }
 ];
 
@@ -41,6 +44,18 @@ async function extractDocx(filePath) {
   const buf = fs.readFileSync(filePath);
   const result = await mammoth.convertToHtml({ buffer: buf });
   return htmlToPlain(result.value);
+}
+
+async function extractPdf(filePath) {
+  const buf = fs.readFileSync(filePath);
+  const parser = new PDFParse({ data: buf });
+  try {
+    const result = await parser.getText();
+    const text = (result && result.text) ? String(result.text) : '';
+    return text.replace(/\n{3,}/g, '\n\n').replace(/\r\n/g, '\n').trim();
+  } finally {
+    await parser.destroy();
+  }
 }
 
 function flattenChapters(chapters) {
@@ -97,19 +112,20 @@ async function main() {
       continue;
     }
     const files = fs.readdirSync(dirPath)
-      .filter((n) => n.toLowerCase().endsWith('.docx') && !n.startsWith('~'))
+      .filter((n) => !n.startsWith('~') && (n.toLowerCase().endsWith('.docx') || n.toLowerCase().endsWith('.pdf')))
       .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
     const chapters = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const filePath = path.join(dirPath, file);
-      const chapterTitle = file.replace(/\.docx$/i, '').trim();
+      const isPdf = file.toLowerCase().endsWith('.pdf');
+      const chapterTitle = file.replace(/\.(docx|pdf)$/i, '').trim();
       const prefix = chapterPrefix || id.split('-').pop() || 'ch';
       const chapterId = prefix + '-' + (i + 1);
       let body = '';
       try {
-        body = await extractDocx(filePath);
+        body = isPdf ? await extractPdf(filePath) : await extractDocx(filePath);
       } catch (err) {
         console.warn('Extract failed for', file, err.message);
       }

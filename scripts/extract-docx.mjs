@@ -20,9 +20,8 @@ const FOLDERS = [
   { id: 'the-source-and-the-sapling', dir: 'The Source and the Sapling', title: 'The Source and the Sapling', subtitle: '', chapterPrefix: 'sapling' },
   { id: 'the-bare-surprise', dir: 'The Bare Surprise', title: 'The Bare Surprise', subtitle: '', chapterPrefix: 'bare' },
   { id: 'the-second-skin', dir: 'The Second Skin', title: 'The Second Skin', subtitle: '', chapterPrefix: 'skin' },
-  { id: 'family-kamasutra', dir: 'Family Kamasutra', title: 'Family Kamasutra', subtitle: '', chapterPrefix: 'kamasutra' },
-  { id: 'moms-help-with-erection', dir: 'Moms Help with Erection', title: 'Moms Help with Erection', subtitle: '', chapterPrefix: 'erection' },
-  { id: 'untitled-folder', dir: 'untitled folder', title: 'Untitled', subtitle: '', chapterPrefix: 'untitled' }
+  { id: 'the-naked-haveli', dir: 'The Naked Haveli', title: 'The Naked Haveli', subtitle: '', chapterPrefix: 'haveli' },
+  { id: 'the-silk-horizon', dir: 'The Silk Horizon', title: 'The Silk Horizon', subtitle: '', chapterPrefix: 'silk' },
 ];
 
 function htmlToPlain(html) {
@@ -103,12 +102,15 @@ function loadExistingStories() {
 }
 
 async function main() {
-  const stories = loadExistingStories();
+  const stories = loadExistingStories().filter((s) => s && s.id !== 'family-kamasutra' && s.id !== 'moms-help-with-erection' && s.id !== 'untitled-folder');
 
   for (const { id, dir, title, subtitle, chapterPrefix } of FOLDERS) {
     const dirPath = path.join(root, dir);
     if (!fs.existsSync(dirPath)) {
       console.warn('Folder not found:', dirPath);
+      // If it existed in the previous content.json, remove it so deleted folders disappear from the app.
+      const idx = stories.findIndex((s) => s.id === id);
+      if (idx >= 0) stories.splice(idx, 1);
       continue;
     }
     const files = fs.readdirSync(dirPath)
@@ -132,13 +134,37 @@ async function main() {
       chapters.push({ id: chapterId, title: chapterTitle, body: body || '(No text extracted.)' });
     }
 
+    // If filenames include "Part N", group into Part 1..6 blocks.
+    const hasPart = chapters.some((ch) => /^Part\s+\d+\b/i.test(ch.title));
+    let chapterOutput = chapters;
+    if (hasPart) {
+      const parts = new Map();
+      for (let p = 1; p <= 6; p++) parts.set(p, []);
+      for (const ch of chapters) {
+        const m = String(ch.title).match(/^Part\s+(\d+)\s+(.*)$/i);
+        const partNum = m ? Math.max(1, Math.min(6, parseInt(m[1], 10))) : 1;
+        const cleanTitle = m ? m[2].trim() : ch.title;
+        parts.get(partNum).push({ ...ch, title: cleanTitle });
+      }
+      chapterOutput = [];
+      for (let p = 1; p <= 6; p++) {
+        const children = parts.get(p) || [];
+        if (children.length === 0) continue;
+        chapterOutput.push({
+          id: `${chapterPrefix || id}-part-${p}`,
+          title: `Part ${p}`,
+          children
+        });
+      }
+    }
+
     const existing = stories.find((s) => s.id === id);
     if (existing) {
-      existing.chapters = chapters;
+      existing.chapters = chapterOutput;
       existing.title = title;
       existing.subtitle = subtitle;
     } else {
-      stories.push({ id, title, subtitle, chapters });
+      stories.push({ id, title, subtitle, chapters: chapterOutput });
     }
   }
 
